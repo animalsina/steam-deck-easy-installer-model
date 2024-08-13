@@ -77,9 +77,11 @@ def clean_temp_directory(directory):
 def main():
     parser = argparse.ArgumentParser(description="Retrieve and download images of a game from SteamGridDB.")
     parser.add_argument('game_name', type=str, help="Name of the game to search for")
+    parser.add_argument('app_id', type=str, help="Application ID for naming images")
     args = parser.parse_args()
 
     game_name = args.game_name
+    app_id = args.app_id
 
     # Get the game ID
     game_id = get_game_id(game_name)
@@ -96,11 +98,11 @@ def main():
     if not images_by_type:
         return
 
-    # Download and save one image per type
+    # Download and save one image per type with app_id
     for asset_type, asset_info in images_by_type.items():
         image_url = asset_info['url']
         extension = get_file_extension_from_url(image_url)
-        image_filename = os.path.join(temp_dir, f"{asset_type}_{game_name.replace(' ', '_')}.{extension}")
+        image_filename = os.path.join(temp_dir, f"{app_id}_{asset_type}.{extension}")
         print(f"Downloading {asset_type} image from {image_url} with extension {extension}")
         download_image(image_url, image_filename)
 
