@@ -11,16 +11,21 @@ configure_steam_and_images() {
     fi
 
     # Check if Steam is running and close it if it is
-    steam_pid=$(pgrep steam)
-    if [ -n "$steam_pid" ]; then
-        kill "$steam_pid"
-        echo "Steam closed."
+    if pgrep steam > /dev/null; then
+        echo "Closing Steam..."
+        pkill steam
+        sleep 5  # Wait for a few seconds to ensure Steam is closed
+
+        # Check if Steam is still running
+        if pgrep steam > /dev/null; then
+            echo "Steam could not be closed properly."
+            exit 1
+        else
+            echo "Steam closed successfully."
+        fi
     else
         echo "Steam is not running."
     fi
-
-    # Wait for a few seconds to ensure Steam is closed
-    sleep 5
 
     # Get the absolute path to the Python script
     python_script="scripts/python/steam_integration.py"
