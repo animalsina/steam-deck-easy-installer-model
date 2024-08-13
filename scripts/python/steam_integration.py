@@ -4,15 +4,20 @@ import subprocess
 import hashlib
 import vdf
 import uuid
+import configparser
 
-# Folder configuration
-home_dir = os.path.expanduser("~")
-steam_games_folder = os.path.join(home_dir, "deck", ".local", "share", "Steam", "steam", "games")
+# Load configuration
+config = configparser.ConfigParser()
+config.read('config.ini')
 
-# Function to get the Steam path
+# Configuration parameters
+steam_games_folder = config.get('settings', 'steam_games_folder')
+steam_root = config.get('settings', 'steam_root')
+shortcuts_file_path = config.get('settings', 'shortcuts_vdf')
+
 def get_steam_user_data_path(steam_root=None):
     if steam_root is None:
-        steam_root = os.path.join(home_dir, "deck", ".local", "share", "Steam", "userdata")
+        steam_root = os.path.expanduser("~/.local/share/Steam/userdata")
 
     if not os.path.exists(steam_root):
         print(f"Default Steam path not found. Please provide the correct path.")
@@ -25,7 +30,6 @@ def get_steam_user_data_path(steam_root=None):
 
     return None
 
-# Function to generate a numeric app ID starting with 65538
 def generate_app_id(app_name):
     hash_object = hashlib.md5(app_name.encode())
     hash_hex = hash_object.hexdigest()
@@ -33,12 +37,9 @@ def generate_app_id(app_name):
     app_id = "65535" + str(hash_int % (10**6))
     return app_id
 
-# Function to add or update a shortcut to Steam
 def add_or_update_shortcut(steam_user_data_path, app_name, app_id, flatpak_command, icon_path):
-    shortcuts_file = os.path.join(steam_user_data_path, "config", "shortcuts.vdf")
-
-    if os.path.exists(shortcuts_file):
-        with open(shortcuts_file, 'rb') as f:
+    if os.path.exists(shortcuts_file_path):
+        with open(shortcuts_file_path, 'rb') as f:
             shortcuts = vdf.binary_load(f)
     else:
         shortcuts = {"shortcuts": {}}
@@ -71,12 +72,11 @@ def add_or_update_shortcut(steam_user_data_path, app_name, app_id, flatpak_comma
     else:
         shortcuts["shortcuts"][str(uuid.uuid4().int)] = shortcut
 
-    with open(shortcuts_file, 'wb') as f:
+    with open(shortcuts_file_path, 'wb') as f:
         vdf.binary_dump(shortcuts, f)
 
     return app_id
 
-# Function to move images while retaining the original extension
 def move_images(app_id, images_folder, steam_root):
     steam_grid_folder = os.path.join(steam_root, "config", "grid")
 
@@ -93,18 +93,15 @@ def move_images(app_id, images_folder, steam_root):
             print(f"Copying {source_file} to {dest_file}")
             shutil.copy(source_file, dest_file)
 
-            # Delete the source file after copying
             os.remove(source_file)
             print(f"Deleted {source_file}")
         else:
             print(f"No image found for {img_type} in {images_folder}")
 
-# Function to hash the app name
 def hash_app_name(app_name):
     hash_object = hashlib.md5(app_name.encode())
     return hash_object.hexdigest()
 
-# Function to move the icon image to the Steam games folder
 def move_icon_image(app_id, images_folder):
     icon_file = f"{hash_app_name(app_id)}.ico"
     icon_path = os.path.join(images_folder, f"{app_id}_icon.ico")
@@ -128,7 +125,6 @@ def move_icon_image(app_id, images_folder):
             else:
                 print("File integrity check failed.")
 
-            # Delete the source file after copying
             os.remove(icon_path)
             print(f"Deleted {icon_path}")
 
@@ -145,12 +141,10 @@ def calculate_checksum(file_path):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
-# Run the get_images.py script
 def run_get_images(app_name, app_id):
-    script_path = os.path.join(os.path.dirname(__file__), 'get_images.py')
+    script_path = os.path.join(os.getcwd(), 'scripts', 'python', 'get_images.py')
     subprocess.run(["python3", script_path, app_name, str(app_id)], check=True)
 
-# Main function
 def main(app_name):
     steam_user_data_path = get_steam_user_data_path()
     if not steam_user_data_path:

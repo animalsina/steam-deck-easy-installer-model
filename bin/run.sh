@@ -1,13 +1,41 @@
 #!/bin/bash
 
-# URL of the Git repository
-GIT_REPO_URL="https://github.com/animalsina/steam-deck-easy-installer-model.git"
+CONFIG_FILE="./config.ini"
 
-# Name of the application and Flatpak repo (passed as arguments)
+# Funzione per leggere e stampare i valori dal file di configurazione
+read_config() {
+    local config_file=$1
+    echo "Reading configuration from $config_file"
+    while IFS='=' read -r key value; do
+        # Rimuovi spazi bianchi iniziali e finali
+        key=$(echo "$key" | xargs)
+        value=$(echo "$value" | xargs)
+        if [[ -n "$key" && "$key" != \#* ]]; then
+            declare -g "$key=$value"
+        fi
+    done < "$config_file"
+}
+
+# Carica la configurazione
+if [ ! -f "$CONFIG_FILE" ]; then
+    echo "File di configurazione non trovato: $CONFIG_FILE"
+    exit 1
+fi
+
+read_config "$CONFIG_FILE"
+
+# Stampa le variabili per il debug
+echo "REPO_DIR: $REPO_DIR"
+echo "GIT_REPO_URL: $GIT_REPO_URL"
+echo "steam_games_folder: $steam_games_folder"
+echo "steam_root: $steam_root"
+echo "shortcuts_vdf: $shortcuts_vdf"
+echo "search_url: $search_url"
+echo "assets_url: $assets_url"
+
 APP_NAME=$1
 FLATPAK_REPO=$2
 
-# Check that both APP_NAME and FLATPAK_REPO are provided
 if [ -z "$APP_NAME" ]; then
     echo "Usage: $0 <app-name> <flatpak-repo>"
     exit 1
@@ -18,10 +46,6 @@ if [ -z "$FLATPAK_REPO" ]; then
     exit 1
 fi
 
-# Name of the directory where the repository will be cloned
-REPO_DIR="temp_git_repo"
-
-# Function to check if git is installed
 install_git_if_needed() {
     if ! command -v git &> /dev/null; then
         echo "Git is not installed. Installing..."
@@ -32,7 +56,6 @@ install_git_if_needed() {
     fi
 }
 
-# Function to clone the Git repository
 clone_git_repo() {
     if [ -d "$REPO_DIR" ]; then
         rm -rf "$REPO_DIR"
@@ -40,20 +63,25 @@ clone_git_repo() {
     git clone "$GIT_REPO_URL" "$REPO_DIR"
 }
 
-# Function to make the scripts executable
 make_scripts_executable() {
-    chmod +x "$REPO_DIR/scripts/bash/install_python.sh"
-    chmod +x "$REPO_DIR/scripts/bash/install_python_libraries.sh"
-    chmod +x "$REPO_DIR/scripts/bash/install_flatpak_app.sh"
-    chmod +x "$REPO_DIR/scripts/bash/configure_steam_and_images.sh"
+    chmod +x "scripts/bash/install_python.sh"
+    chmod +x "scripts/bash/install_python_libraries.sh"
+    chmod +x "scripts/bash/install_flatpak_app.sh"
+    chmod +x "scripts/bash/configure_steam_and_images.sh"
 }
 
-# Main function to run the installation and configuration
 run_installation() {
-    source "$REPO_DIR/scripts/bash/install_python.sh"
-    source "$REPO_DIR/scripts/bash/install_python_libraries.sh"
-    source "$REPO_DIR/scripts/bash/install_flatpak_app.sh"
-    source "$REPO_DIR/scripts/bash/configure_steam_and_images.sh"
+    # Naviga alla cartella del repository
+    cd "$REPO_DIR" || { echo "Failed to navigate to $REPO_DIR"; exit 1; }
+
+    # Assicurati che gli script siano eseguibili
+    make_scripts_executable
+
+    # Esegui gli script
+    source scripts/bash/install_python.sh
+    source scripts/bash/install_python_libraries.sh
+    source scripts/bash/install_flatpak_app.sh
+    source scripts/bash/configure_steam_and_images.sh
 
     install_python
     install_python_libraries
@@ -61,18 +89,18 @@ run_installation() {
     configure_steam_and_images "$APP_NAME"
 
     echo "Installation and configuration completed."
+
+    # Torna alla cartella originale
+    cd - || exit
 }
 
-# Function to remove the Git repository directory
 cleanup() {
     rm -rf "$REPO_DIR"
     echo "Git repository directory removed."
     echo "Operation completed successfully."
 }
 
-# Run the script
 install_git_if_needed
 clone_git_repo
-make_scripts_executable
 run_installation
 cleanup
