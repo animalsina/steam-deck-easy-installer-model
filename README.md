@@ -1,3 +1,9 @@
+# !! Very important alert !! 
+This script is WIP, until the official release use it only if you know what you do. 
+Report every problem, some command in the scripts can corrupts the files. 
+
+
+
 # Steam Integration Project
 
 ## Overview
