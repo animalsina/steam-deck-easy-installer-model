@@ -7,7 +7,7 @@ GIT_REPO_URL="https://github.com/animalsina/steam-deck-easy-installer-model.git"
 APP_NAME=$1
 
 # Name of the directory where the repository will be cloned
-REPO_DIR="temp_{$APP_NAME}_git_repo"
+REPO_DIR="temp_$APP_NAME_git_repo"
 
 
 # Function to check if git is installed
