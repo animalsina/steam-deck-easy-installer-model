@@ -7,8 +7,7 @@ GIT_REPO_URL="https://github.com/animalsina/steam-deck-easy-installer-model.git"
 APP_NAME=$1
 
 # Name of the directory where the repository will be cloned
-REPO_DIR="temp__git_repo"
-
+REPO_DIR="temp_git_repo"
 
 # Function to check if git is installed
 install_git_if_needed() {
@@ -49,9 +48,14 @@ run_installation() {
         exit 1
     fi
 
+    if [ -z "$FLATPAK_REPO" ]; then
+        echo "Error: FLATPAK_REPO environment variable is not set."
+        exit 1
+    fi
+
     install_python
     install_python_libraries
-    install_flatpak_app "$APP_NAME"
+    install_flatpak_app "$FLATPAK_REPO"
     configure_steam_and_images "$APP_NAME"
 
     echo "Installation and configuration completed."
