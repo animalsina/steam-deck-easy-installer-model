@@ -3,8 +3,20 @@
 # URL of the Git repository
 GIT_REPO_URL="https://github.com/animalsina/steam-deck-easy-installer-model.git"
 
-# Name of the Flatpak application (passed as an argument)
+# Name of the application and Flatpak repo (passed as arguments)
 APP_NAME=$1
+FLATPAK_REPO=$2
+
+# Check that both APP_NAME and FLATPAK_REPO are provided
+if [ -z "$APP_NAME" ]; then
+    echo "Usage: $0 <app-name> <flatpak-repo>"
+    exit 1
+fi
+
+if [ -z "$FLATPAK_REPO" ]; then
+    echo "Error: FLATPAK_REPO argument is not set."
+    exit 1
+fi
 
 # Name of the directory where the repository will be cloned
 REPO_DIR="temp_git_repo"
@@ -42,16 +54,6 @@ run_installation() {
     source "$REPO_DIR/scripts/bash/install_python_libraries.sh"
     source "$REPO_DIR/scripts/bash/install_flatpak_app.sh"
     source "$REPO_DIR/scripts/bash/configure_steam_and_images.sh"
-
-    if [ -z "$APP_NAME" ]; then
-        echo "Usage: $0 <flatpak-app-name>"
-        exit 1
-    fi
-
-    if [ -z "$FLATPAK_REPO" ]; then
-        echo "Error: FLATPAK_REPO environment variable is not set."
-        exit 1
-    fi
 
     install_python
     install_python_libraries
