@@ -83,7 +83,7 @@ run_installation() {
     source scripts/bash/install_flatpak_app.sh
     source scripts/bash/configure_steam_and_images.sh
 
-    install_python
+    install_python_and_pipx
     install_python_libraries
     install_flatpak_app "$FLATPAK_REPO"
     configure_steam_and_images "$APP_NAME"
