@@ -11,9 +11,11 @@ config = configparser.ConfigParser()
 config.read('config.ini')
 
 # Configuration parameters
-steam_games_folder = config.get('settings', 'steam_games_folder')
-steam_root = config.get('settings', 'steam_root')
-shortcuts_file_path = config.get('settings', 'shortcuts_vdf')
+steam_games_folder = os.path.expanduser(config.get('settings', 'steam_games_folder'))
+steam_root = os.path.expanduser(config.get('settings', 'steam_root'))
+shortcuts_file_path = os.path.expanduser(config.get('settings', 'shortcuts_vdf'))
+search_url = config.get('settings', 'search_url')
+assets_url = config.get('settings', 'assets_url')
 
 def get_steam_user_data_path(steam_root=None):
     if steam_root is None:
@@ -38,11 +40,19 @@ def generate_app_id(app_name):
     return app_id
 
 def add_or_update_shortcut(steam_user_data_path, app_name, app_id, flatpak_command, icon_path):
+    # Verifica se la directory del file di configurazione esiste, altrimenti creala
+    shortcuts_dir = os.path.dirname(shortcuts_file_path)
+    if not os.path.exists(shortcuts_dir):
+        os.makedirs(shortcuts_dir)
+        print(f"Directory {shortcuts_dir} creata.")
+
+    # Carica o inizializza il file shortcuts.vdf
     if os.path.exists(shortcuts_file_path):
         with open(shortcuts_file_path, 'rb') as f:
             shortcuts = vdf.binary_load(f)
     else:
         shortcuts = {"shortcuts": {}}
+        print(f"File {shortcuts_file_path} creato.")
 
     existing_id = None
     for shortcut_id, shortcut in shortcuts["shortcuts"].items():
