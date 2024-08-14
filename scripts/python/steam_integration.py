@@ -172,15 +172,15 @@ def main(app_name, flatpak_repo):
     else:
         run_get_images(app_name, app_id)
 
+    flatpak_command = f"flatpak run {flatpak_repo}"
+
+    move_images(app_id, source_images_folder, steam_user_data_path)
+
     icon_path = get_existing_icon_path(steam_user_data_path, app_id)
     if icon_path:
         print(f"Icon path found: {icon_path}")
     else:
         print("No icon file found.")
-
-    flatpak_command = f"flatpak run {flatpak_repo}"
-
-    move_images(app_id, source_images_folder, steam_user_data_path)
 
     add_or_update_shortcut(steam_user_data_path, app_name, app_id, flatpak_command, icon_path, flatpak_repo)
 
