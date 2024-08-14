@@ -47,7 +47,7 @@ def backup_shortcuts_file(shortcuts_file_path):
         shutil.copy2(shortcuts_file_path, backup_file_path)
         print(f"Backup created: {backup_file_path}")
 
-def add_or_update_shortcut(steam_user_data_path, app_name, app_id, flatpak_command, icon_path):
+def add_or_update_shortcut(steam_user_data_path, app_name, app_id, flatpak_command, icon_path, flatpak_repo):
     steam_vdf_complete_path = os.path.join(steam_user_data_path, shortcuts_file_path)
 
     # Backup the existing shortcuts file if it exists
@@ -79,7 +79,7 @@ def add_or_update_shortcut(steam_user_data_path, app_name, app_id, flatpak_comma
         icon_path = ""
 
     shortcut = {
-        "appid": app_id,
+        "appid": str(app_id),
         "AppName": app_name,
         "Exe": flatpak_command,
         "StartDir": "",
@@ -111,12 +111,20 @@ def move_images(app_id, images_folder, steam_root):
     if not os.path.exists(steam_grid_folder):
         os.makedirs(steam_grid_folder)
 
-    for img_type in ["icon", "logo", "hero", "grid"]:
-        matching_files = [f for f in os.listdir(images_folder) if f.startswith(f"{app_id}_{img_type}")]
+    for img_type in ["icon", "logo", "hero", "grid", ""]:
+        empty = False
+        if(img_type == ""):
+            empty = True
+            matching_files = [f for f in os.listdir(images_folder) if f.startswith(f"{app_id}")]
+        else:
+            matching_files = [f for f in os.listdir(images_folder) if f.startswith(f"{app_id}_{img_type}")]
 
         if matching_files:
             source_file = os.path.join(images_folder, matching_files[0])
-            dest_file = os.path.join(steam_grid_folder, f"{app_id}_{img_type}{os.path.splitext(matching_files[0])[1]}")
+            if(empty is True):
+                dest_file = os.path.join(steam_grid_folder, f"{app_id}{os.path.splitext(matching_files[0])[1]}")
+            else:
+                dest_file = os.path.join(steam_grid_folder, f"{app_id}_{img_type}{os.path.splitext(matching_files[0])[1]}")
 
             print(f"Copying {source_file} to {dest_file}")
             shutil.copy(source_file, dest_file)
@@ -161,7 +169,7 @@ def main(app_name, flatpak_repo):
 
     move_images(app_id, source_images_folder, steam_user_data_path)
 
-    add_or_update_shortcut(steam_user_data_path, app_name, app_id, flatpak_command, icon_path)
+    add_or_update_shortcut(steam_user_data_path, app_name, app_id, flatpak_command, icon_path, flatpak_repo)
 
     print(f"Program {app_name} added to Steam with ID {app_id}")
     try:

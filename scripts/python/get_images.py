@@ -52,11 +52,35 @@ def get_game_images(game_id):
         if data.get('success') and 'data' in data and 'assets' in data['data']:
             assets = data['data']['assets']
             if assets:
-                images_by_type[asset_type] = {
-                    'url': assets[0]['url'],
-                }
+                # Handle specific logic for grid images
+                if asset_type == "grid":
+                    vertical_image = None
+                    horizontal_image = None
+
+                    for asset in assets:
+                        if asset['width'] > asset['height']:
+                            horizontal_image = asset
+                        else:
+                            vertical_image = asset
+
+                    if vertical_image:
+                        images_by_type['grid'] = {
+                            'url': vertical_image['url'],
+                            'filename_prefix': 'grid'
+                        }
+                    if horizontal_image:
+                        images_by_type['grid_no_prefix'] = {
+                            'url': horizontal_image['url'],
+                            'filename_prefix': ''
+                        }
+                else:
+                    images_by_type[asset_type] = {
+                        'url': assets[0]['url'],
+                        'filename_prefix': asset_type
+                    }
 
     return images_by_type
+
 
 def get_file_extension_from_url(url):
     parsed_url = urlparse(url)
@@ -101,9 +125,17 @@ def main():
     for asset_type, asset_info in images_by_type.items():
         image_url = asset_info['url']
         extension = get_file_extension_from_url(image_url)
-        image_filename = os.path.join(temp_dir, f"{app_id}_{asset_type}.{extension}")
+        filename_prefix = asset_info.get('filename_prefix', '')
+
+        if filename_prefix:
+            image_filename = os.path.join(temp_dir, f"{app_id}_{filename_prefix}.{extension}")
+        else:
+            image_filename = os.path.join(temp_dir, f"{app_id}.{extension}")
+
         print(f"Downloading {asset_type} image from {image_url} with extension {extension}")
         download_image(image_url, image_filename)
+
+
 
 if __name__ == "__main__":
     main()
