@@ -149,6 +149,14 @@ def run_get_images(app_name, app_id):
     script_path = os.path.join(os.getcwd(), 'scripts', 'python', 'get_images.py')
     subprocess.run(["python3", script_path, app_name, str(app_id)], check=True)
 
+def get_existing_icon_path(steam_user_data_path, app_id):
+    extensions = ['.png', '.ico', '.tga']
+    for ext in extensions:
+        icon_path = os.path.join(steam_user_data_path, "config", "grid", f"{app_id}_icon{ext}")
+        if os.path.isfile(icon_path):
+            return icon_path
+    return None
+
 def main(app_name, flatpak_repo):
     steam_user_data_path = get_steam_user_data_path()
     if not steam_user_data_path:
@@ -164,7 +172,12 @@ def main(app_name, flatpak_repo):
     else:
         run_get_images(app_name, app_id)
 
-    icon_path = os.path.join(steam_user_data_path, "config", "grid", f"{app_id}_icon.png")
+    icon_path = get_existing_icon_path(steam_user_data_path, app_id)
+    if icon_path:
+        print(f"Icon path found: {icon_path}")
+    else:
+        print("No icon file found.")
+
     flatpak_command = f"flatpak run {flatpak_repo}"
 
     move_images(app_id, source_images_folder, steam_user_data_path)
