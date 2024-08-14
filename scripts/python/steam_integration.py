@@ -76,7 +76,7 @@ def add_or_update_shortcut(steam_user_data_path, app_name, app_id, flatpak_comma
     print(f"Shortcut Path: {icon_path}")
 
     if icon_path is None:
-        icon_path = "./"
+        icon_path = ""
 
     shortcut = {
         "appid": app_id,
@@ -111,7 +111,7 @@ def move_images(app_id, images_folder, steam_root):
     if not os.path.exists(steam_grid_folder):
         os.makedirs(steam_grid_folder)
 
-    for img_type in ["logo", "hero", "grid"]:
+    for img_type in ["icon", "logo", "hero", "grid"]:
         matching_files = [f for f in os.listdir(images_folder) if f.startswith(f"{app_id}_{img_type}")]
 
         if matching_files:
@@ -129,40 +129,6 @@ def move_images(app_id, images_folder, steam_root):
 def hash_app_name(app_name):
     hash_object = hashlib.md5(app_name.encode())
     return hash_object.hexdigest()
-
-def move_icon_image(app_id, images_folder):
-    icon_file = f"{hash_app_name(app_id)}.ico"
-    icon_path = os.path.join(images_folder, f"{app_id}_icon.ico")
-    dest_file = os.path.join(steam_games_folder, icon_file)
-
-    if os.path.exists(icon_path):
-        if not os.path.exists(steam_games_folder):
-            os.makedirs(steam_games_folder)
-
-        print(f"Copying {icon_path} to {dest_file}")
-
-        try:
-            shutil.copy2(icon_path, dest_file)
-            print(f"Successfully copied {icon_path} to {dest_file}")
-
-            original_checksum = calculate_checksum(icon_path)
-            copied_checksum = calculate_checksum(dest_file)
-
-            if original_checksum == copied_checksum:
-                print("File integrity verified.")
-            else:
-                print("File integrity check failed.")
-
-            os.remove(icon_path)
-            print(f"Deleted {icon_path}")
-            return dest_file
-        except Exception as e:
-            print(f"Error copying file: {e}")
-            return None  # Return None if there was an error
-
-    else:
-        print(f"No icon image found to move in {icon_path} path.")
-        return None
 
 def calculate_checksum(file_path):
     hash_md5 = hashlib.md5()
@@ -188,15 +154,14 @@ def main(app_name, flatpak_repo):
     if os.path.exists(source_images_folder) and os.listdir(source_images_folder):
         print("Images already present in the source folder, skipping download.")
     else:
-        run_get_images(flatpak_repo, app_id)
+        run_get_images(app_name, app_id)
 
-    icon_path = os.path.join(source_images_folder, f"{app_id}_icon.ico")
+    icon_path = os.path.join(steam_user_data_path, "config", "grid", f"{app_id}_icon.png")
     flatpak_command = f"flatpak run {flatpak_repo}"
 
     move_images(app_id, source_images_folder, steam_user_data_path)
-    dest_file = move_icon_image(app_id, source_images_folder)
 
-    add_or_update_shortcut(steam_user_data_path, app_name, app_id, flatpak_command, dest_file)
+    add_or_update_shortcut(steam_user_data_path, app_name, app_id, flatpak_command, icon_path)
 
     print(f"Program {app_name} added to Steam with ID {app_id}")
     try:
