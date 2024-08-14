@@ -2,29 +2,31 @@
 
 CONFIG_FILE="./config.ini"
 
-# Funzione per leggere e stampare i valori dal file di configurazione
+# Function to read and print values from the configuration file
 read_config() {
     local config_file=$1
     echo "Reading configuration from $config_file"
     while IFS='=' read -r key value; do
-        # Rimuovi spazi bianchi iniziali e finali
+        # Remove leading and trailing whitespace
         key=$(echo "$key" | xargs)
         value=$(echo "$value" | xargs)
-        if [[ -n "$key" && "$key" != \#* ]]; then
+
+        # Ensure the key is a valid identifier and not empty
+        if [[ -n "$key" && "$key" != \#* && "$key" =~ ^[a-zA-Z_][a-zA-Z0-9_]*$ ]]; then
             declare -g "$key=$value"
         fi
     done < "$config_file"
 }
 
-# Carica la configurazione
+# Load the configuration
 if [ ! -f "$CONFIG_FILE" ]; then
-    echo "File di configurazione non trovato: $CONFIG_FILE"
+    echo "Configuration file not found: $CONFIG_FILE"
     exit 1
 fi
 
 read_config "$CONFIG_FILE"
 
-# Stampa le variabili per il debug
+# Print variables for debugging
 echo "REPO_DIR: $REPO_DIR"
 echo "GIT_REPO_URL: $GIT_REPO_URL"
 echo "steam_games_folder: $steam_games_folder"
@@ -35,6 +37,12 @@ echo "assets_url: $assets_url"
 
 APP_NAME=$1
 FLATPAK_REPO=$2
+
+echo "=============="
+echo "AppName: $APP_NAME"
+echo "FLATPAK_REPO: $FLATPAK_REPO"
+echo "=============="
+echo ""
 
 if [ -z "$APP_NAME" ]; then
     echo "Usage: $0 <app-name> <flatpak-repo>"
@@ -71,13 +79,17 @@ make_scripts_executable() {
 }
 
 run_installation() {
-    # Naviga alla cartella del repository
-    cd "$REPO_DIR" || { echo "Failed to navigate to $REPO_DIR"; exit 1; }
+    # Navigate to the repository folder, but only if we're not in local mode
+    if [ ! -f ".local" ]; then
+        cd "$REPO_DIR" || { echo "Failed to navigate to $REPO_DIR"; exit 1; }
+    else
+        echo "Local mode detected, using existing directory."
+    fi
 
-    # Assicurati che gli script siano eseguibili
+    # Ensure the scripts are executable
     make_scripts_executable
 
-    # Esegui gli script
+    # Execute the scripts
     source scripts/bash/install_python.sh
     source scripts/bash/install_python_libraries.sh
     source scripts/bash/install_flatpak_app.sh
@@ -86,21 +98,31 @@ run_installation() {
     install_python_and_pipx
     install_python_libraries
     install_flatpak_app "$FLATPAK_REPO"
-    configure_steam_and_images "$APP_NAME"
+    configure_steam_and_images "$APP_NAME" "$FLATPAK_REPO"
 
     echo "Installation and configuration completed."
 
-    # Torna alla cartella originale
-    cd - || exit
+    # Return to the original directory, only if we navigated into the repository
+    if [ ! -f ".local" ]; then
+        cd - || exit
+    fi
 }
 
 cleanup() {
-    rm -rf "$REPO_DIR"
-    echo "Git repository directory removed."
+    # Cleanup only if not in local mode
+    if [ ! -f ".local" ]; then
+        rm -rf "$REPO_DIR"
+        echo "Git repository directory removed."
+    fi
     echo "Operation completed successfully."
 }
 
-install_git_if_needed
-clone_git_repo
-run_installation
-cleanup
+if [ -f ".local" ]; then
+    echo "Local mode detected. Skipping GitHub repository clone."
+    run_installation
+else
+    install_git_if_needed
+    clone_git_repo
+    run_installation
+    cleanup
+fi

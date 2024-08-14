@@ -1,38 +1,33 @@
 #!/bin/bash
 
 install_python_libraries() {
-  if ! command -v python3-steamgrid &>/dev/null; then
-    echo "Python3 Steamgrid not found, installing..."
-  sudo pacman -Syu --noconfirm python-steamgrid
+    # Check and install python-vdf
+    if ! check_package "python-vdf"; then
+        install_package "python-vdf"
+    fi
+
+    # Check and install python-requests
+    if ! check_package "python-requests"; then
+        install_package "python-requests"
+    fi
+}
+#!/bin/bash
+
+# Function to check if a package is installed via pacman
+check_package() {
+    local package=$1
+    if pacman -Q "$package" &>/dev/null; then
+        echo "$package is already installed."
+        return 0
     else
-    echo "Python3 Steamgrid is already installed."
-  fi
+        echo "$package is not installed."
+        return 1
+    fi
+}
 
-  if ! command -v python3-beautifulsoup4 &>/dev/null; then
-    echo "Python3 beautifulsoup4 not found, installing..."
-    sudo pacman -Syu --noconfirm python-beautifulsoup4
-  else
-    echo "Python3 beautifulsoup4 is already installed."
-  fi
-
-  if ! command -v python3-steam-shortcut &>/dev/null; then
-    echo "Python3 steam-shortcut not found, installing..."
-    sudo pacman -Syu --noconfirm python-steam-shortcut
-  else
-    echo "Python3 steam-shortcut is already installed."
-  fi
-
-  if ! command -v python3-vdf &>/dev/null; then
-    echo "Python3 vdf not found, installing..."
-    sudo pacman -Syu --noconfirm python-vdf
-  else
-    echo "Python3 vdf is already installed."
-  fi
-
-  if ! command -v python3-requests &>/dev/null; then
-    echo "Python3 requests not found, installing..."
-    sudo pacman -Syu --noconfirm python-requests
-  else
-    echo "Python3 requests is already installed."
-  fi
+# Function to install a package via pacman
+install_package() {
+    local package=$1
+    echo "Installing $package..."
+    sudo pacman -Syu --noconfirm "$package"
 }
