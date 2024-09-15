@@ -14,6 +14,7 @@ SEARCH_URL = config.get('settings', 'search_url')
 ASSETS_URL = config.get('settings', 'assets_url')
 TEMP_DIR_NAME = "steam_images"
 
+
 def get_game_id(game_name):
     search_url = f"{SEARCH_URL}?term={game_name}"
     response = requests.get(search_url)
@@ -27,6 +28,7 @@ def get_game_id(game_name):
     else:
         print(f"No game ID found for '{game_name}'.")
         return None
+
 
 def get_game_images(game_id):
     headers = {'Content-Type': 'application/json'}
@@ -45,7 +47,8 @@ def get_game_images(game_id):
         payload['asset_type'] = asset_type
         response = requests.post(ASSETS_URL, json=payload, headers=headers)
         if response.status_code != 200:
-            print(f"Failed to retrieve images for asset type '{asset_type}' and game ID '{game_id}'. Status code: {response.status_code}")
+            print(
+                f"Failed to retrieve images for asset type '{asset_type}' and game ID '{game_id}'. Status code: {response.status_code}")
             continue
 
         data = response.json()
@@ -87,6 +90,7 @@ def get_file_extension_from_url(url):
     path = parsed_url.path
     return os.path.splitext(path)[1].lstrip('.')  # Remove the dot from the extension
 
+
 def download_image(image_url, save_path):
     response = requests.get(image_url)
     if response.status_code == 200:
@@ -96,10 +100,12 @@ def download_image(image_url, save_path):
     else:
         print(f"Failed to download image from '{image_url}'. Status code: {response.status_code}")
 
+
 def clean_temp_directory(directory):
     if os.path.exists(directory):
         shutil.rmtree(directory)
     os.makedirs(directory, exist_ok=True)
+
 
 def main():
     parser = argparse.ArgumentParser(description="Retrieve and download images of a game from SteamGridDB.")
@@ -134,7 +140,6 @@ def main():
 
         print(f"Downloading {asset_type} image from {image_url} with extension {extension}")
         download_image(image_url, image_filename)
-
 
 
 if __name__ == "__main__":

@@ -18,6 +18,7 @@ shortcuts_file_path = os.path.expanduser(config.get('settings', 'shortcuts_vdf')
 search_url = config.get('settings', 'search_url')
 assets_url = config.get('settings', 'assets_url')
 
+
 def get_steam_user_data_path(steam_root=None):
     if steam_root is None:
         steam_root = os.path.expanduser("~/.local/share/Steam/userdata")
@@ -33,12 +34,14 @@ def get_steam_user_data_path(steam_root=None):
 
     return None
 
+
 def generate_app_id(app_name):
     hash_object = hashlib.md5(app_name.encode())
     hash_hex = hash_object.hexdigest()
     hash_int = int(hash_hex[:8], 16)
-    app_id = "65535" + str(hash_int % (10**6))
+    app_id = "65535" + str(hash_int % (10 ** 6))
     return app_id
+
 
 def backup_shortcuts_file(shortcuts_file_path):
     if os.path.exists(shortcuts_file_path):
@@ -46,6 +49,7 @@ def backup_shortcuts_file(shortcuts_file_path):
         backup_file_path = f"{shortcuts_file_path}_{timestamp}.bak"
         shutil.copy2(shortcuts_file_path, backup_file_path)
         print(f"Backup created: {backup_file_path}")
+
 
 def add_or_update_shortcut(steam_user_data_path, app_name, app_id, flatpak_command, icon_path, flatpak_repo):
     steam_vdf_complete_path = os.path.join(steam_user_data_path, shortcuts_file_path)
@@ -105,6 +109,7 @@ def add_or_update_shortcut(steam_user_data_path, app_name, app_id, flatpak_comma
 
     return app_id
 
+
 def move_images(app_id, images_folder, steam_root):
     steam_grid_folder = os.path.join(steam_root, "config", "grid")
 
@@ -113,7 +118,7 @@ def move_images(app_id, images_folder, steam_root):
 
     for img_type in ["icon", "logo", "hero", "grid", ""]:
         empty = False
-        if(img_type == ""):
+        if img_type == "":
             empty = True
             matching_files = [f for f in os.listdir(images_folder) if f.startswith(f"{app_id}")]
         else:
@@ -121,10 +126,11 @@ def move_images(app_id, images_folder, steam_root):
 
         if matching_files:
             source_file = os.path.join(images_folder, matching_files[0])
-            if(empty is True):
+            if empty is True:
                 dest_file = os.path.join(steam_grid_folder, f"{app_id}{os.path.splitext(matching_files[0])[1]}")
             else:
-                dest_file = os.path.join(steam_grid_folder, f"{app_id}_{img_type}{os.path.splitext(matching_files[0])[1]}")
+                dest_file = os.path.join(steam_grid_folder,
+                                         f"{app_id}_{img_type}{os.path.splitext(matching_files[0])[1]}")
 
             print(f"Copying {source_file} to {dest_file}")
             shutil.copy(source_file, dest_file)
@@ -134,9 +140,11 @@ def move_images(app_id, images_folder, steam_root):
         else:
             print(f"No image found for {img_type} in {images_folder}")
 
+
 def hash_app_name(app_name):
     hash_object = hashlib.md5(app_name.encode())
     return hash_object.hexdigest()
+
 
 def calculate_checksum(file_path):
     hash_md5 = hashlib.md5()
@@ -145,9 +153,11 @@ def calculate_checksum(file_path):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
+
 def run_get_images(app_name, app_id):
     script_path = os.path.join(os.getcwd(), 'scripts', 'python', 'get_images.py')
     subprocess.run(["python3", script_path, app_name, str(app_id)], check=True)
+
 
 def get_existing_icon_path(steam_user_data_path, app_id):
     extensions = ['.png', '.ico', '.tga']
@@ -156,6 +166,7 @@ def get_existing_icon_path(steam_user_data_path, app_id):
         if os.path.isfile(icon_path):
             return icon_path
     return None
+
 
 def main(app_name, flatpak_repo):
     steam_user_data_path = get_steam_user_data_path()
@@ -191,8 +202,10 @@ def main(app_name, flatpak_repo):
     except Exception as e:
         print(f"Error: {e}")
 
+
 if __name__ == "__main__":
     import sys
+
     if len(sys.argv) != 3:
         print("Usage: steam_integration.py <App Name> <Flatpak Repo>")
         sys.exit(1)

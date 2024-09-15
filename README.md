@@ -1,20 +1,22 @@
-# !! Very important alert !! 
-This script is WIP, until the official release use it only if you know what you do. 
-Report every problem, some command in the scripts can corrupts the files. 
+# !! Crucial alert !!
 
-
+This script is WIP until the official release uses it only if you know what you do.
+Reporting every problem, some commands in the scripts can corrupt the files.
 
 # Steam Integration Project
 
 ## Overview
 
-This project integrates Flatpak applications with Steam, allowing you to add shortcuts to Steam and configure images for the applications. It consists of a series of scripts to automate the process of installing dependencies, configuring Steam, and handling application images.
+This project integrates Flatpak applications with Steam, allowing you to add shortcuts to Steam and configure images for
+the applications.
+It consists of a series of scripts to automate the process of installing dependencies, configuring
+Steam, and handling application images.
 
 ## Scripts
 
 ### `install_python.sh`
 
-Installs Python3 and pip if they are not already installed.
+Install Python3 and pip if they are not already installed.
 
 ### `install_python_libraries.sh`
 
@@ -26,7 +28,8 @@ Installs a Flatpak application.
 
 ### `configure_steam_and_images.sh`
 
-Configures Steam by adding shortcuts and handling images, ensuring Steam is closed during the process and restarted afterward.
+Configures Steam by adding shortcuts and handling images, ensuring Steam is closed during the process and restarted
+afterward.
 
 ### `get_images.py`
 
@@ -34,17 +37,20 @@ Retrieves and downloads images for a specified game from SteamGridDB based on th
 
 ### `steam_integration.py`
 
-Adds or updates a Steam shortcut for a Flatpak application, moves images to the appropriate directories, and performs various file operations related to the application's integration with Steam.
+Adds or updates a Steam shortcut for a Flatpak application, moves images to the appropriate directories, and performs
+various file operations related to the application's integration with Steam.
 
 ### `run.sh`
 
-Automates the entire process by calling the relevant installation and configuration scripts. It takes a Flatpak application name as an argument and executes the installation and configuration steps.
+Automates the entire process by calling the relevant installation and configuration scripts.
+It takes a Flatpak application name as an argument and executes the installation and configuration steps.
 
 ## Setup Instructions
 
 ### Prerequisites
 
-Ensure you have a Linux environment with the necessary permissions to install software. This project assumes you are using a Debian-based distribution (e.g., Ubuntu).
+Ensure you have a Linux environment with the necessary permissions to install software.
+This project assumes you are using a Debian-based distribution (e.g., Ubuntu).
 
 ### 1. Clone the Repository
 
@@ -69,13 +75,15 @@ chmod +x bin/run.sh
 
 ### 3. Run the Main Script
 
-Execute the `run.sh` script to start the installation and configuration process. Provide the Flatpak application name as an argument:
+Execute the `run.sh` script to start the installation and configuration process.
+Provide the Flatpak application name as an argument:
 
 ```
 ./bin/run.sh <flatpak-app-name>
 ```
 
 This will perform the following tasks:
+
 - Install Python3 and pip if they are not already installed.
 - Install required Python libraries.
 - Install the specified Flatpak application.
@@ -85,7 +93,7 @@ This will perform the following tasks:
 
 ### Adding a New Flatpak Application
 
-To add a new Flatpak application to Steam, simply run the `run.sh` script with the application name:
+To add a new Flatpak application to Steam, run the `run.sh` script with the application name:
 
 ```
 ./bin/run.sh <flatpak-app-name>
@@ -95,8 +103,10 @@ Replace `<flatpak-app-name>` with the name of the Flatpak application you want t
 
 ## Notes
 
-- Ensure Steam is not running while the `configure_steam_and_images.sh` script is executing. The script will automatically close and restart Steam for you.
-- The `get_images.py` script retrieves images from SteamGridDB and saves them in a temporary directory before moving them to the appropriate Steam folders.
+- Ensure Steam is not running while the `configure_steam_and_images.sh` script is executing.
+  The script will automatically close and restart Steam for you.
+- The `get_images.py` script retrieves images from SteamGridDB and saves them in a temporary directory before moving
+  them to the appropriate Steam folders.
 - The `steam_integration.py` script updates the Steam shortcut file to include the new Flatpak application.
 
 ## Troubleshooting
